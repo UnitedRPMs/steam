@@ -6,7 +6,7 @@
 
 Name:           steam
 Version:        1.0.0.54
-Release:        7%{?dist}
+Release:        11%{?dist}
 Summary:        Installer for the Steam software distribution service
 # Redistribution and repackaging for Linux is allowed, see license file
 License:        Steam License Agreement
@@ -14,9 +14,8 @@ URL:            http://www.steampowered.com/
 ExclusiveArch:  i686
 
 Source0:        http://repo.steampowered.com/%{name}/pool/%{name}/s/%{name}/%{name}_%{version}.tar.gz
-Source1:        %{name}.sh
-Source2:        %{name}.csh
-Source3:        %{name}.xml
+Source1:	steam-native.sh	
+Source2:	steam-runtime.sh
 Source4:        %{name}.appdata.xml
 
 # Ghost touches in Big Picture mode:
@@ -29,8 +28,6 @@ Source8:        https://raw.githubusercontent.com/denilsonsa/udev-joystick-black
 # First generation Nvidia Shield controller seen as mouse:
 Source9:        https://raw.githubusercontent.com/cyndis/shield-controller-config/master/99-shield-controller.rules
 
-Source10:       README.Fedora
-
 # Remove temporary leftover files after run (fixes multiuser):
 # https://github.com/ValveSoftware/steam-for-linux/issues/3570
 Patch0:         %{name}-3570.patch
@@ -38,6 +35,9 @@ Patch0:         %{name}-3570.patch
 # Make Steam Controller usable as a GamePad:
 # https://steamcommunity.com/app/353370/discussions/0/490123197956024380/
 Patch1:         %{name}-controller-gamepad-emulation.patch
+
+# Checks if pulseaudio is installed and if it isn't, use alsa for SDL_AUDIODRIVER
+Patch2:		alsa_sdl_audiodriver.patch
 
 BuildRequires:  desktop-file-utils
 BuildRequires:  systemd
@@ -87,11 +87,15 @@ Requires:       libva-intel-driver%{?_isa}
 # Required for hardware decoding during In-Home Streaming (radeon/nouveau)
 Requires:       libvdpau%{?_isa}
 
-%if 0%{?fedora}
-# Required for having a functioning menu on the tray icon on Fedora
-# https://github.com/ValveSoftware/steam-for-linux/issues/4795
-Requires:       libdbusmenu-gtk3%{?_isa}
-%endif
+# Required for having a functioning menu on the tray icon
+Requires:       libdbusmenu-gtk2%{?_isa} >= 16.04.0
+Requires:       libdbusmenu-gtk3%{?_isa} >= 16.04.0
+
+# Required by Feral interactive games
+Requires:       libatomic%{?_isa}
+
+# Required by Shank
+Requires:       alsa-plugins-pulseaudio%{?_isa}
 
 Provides:       steam-noruntime = %{?epoch:%{epoch}:}%{version}-%{release}
 Obsoletes:      steam-noruntime < %{?epoch:%{epoch}:}%{version}-%{release}
@@ -106,11 +110,22 @@ and screenshot functionality, and many social features.
 %setup -q -n %{name}
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 
 sed -i 's/\r$//' %{name}.desktop
 sed -i 's/\r$//' steam_install_agreement.txt
 
-cp %{SOURCE10} .
+  # apply roundups for udev rules
+  sed -r 's|("0666")|"0660", TAG+="uaccess"|g' -i lib/udev/rules.d/99-steam-controller-perms.rules
+#  sed -r 's|("misc")|\1, OPTIONS+="static_node=uinput"|g' -i lib/udev/rules.d/99-steam-controller-perms.rules
+  sed -r 's|(, TAG\+="uaccess")|, MODE="0660"\1|g' -i lib/udev/rules.d/60-HTC-Vive-perms.rules
+
+  # separated runtime/native desktop files
+  cp steam{,-native}.desktop
+  sed -r 's|(Name=Steam)|\1 (Runtime)|' -i steam.desktop
+  sed -r 's|(/usr/bin/steam)|\1-runtime|' -i steam.desktop
+  sed -r 's|(Name=Steam)|\1 (Native)|' -i steam-native.desktop
+  sed -r 's|(/usr/bin/steam)|\1-native|' -i steam-native.desktop
 
 %build
 # Nothing to build
@@ -118,37 +133,48 @@ cp %{SOURCE10} .
 %install
 %make_install
 
-rm -fr %{buildroot}%{_docdir}/%{name}/ \
-    %{buildroot}%{_bindir}/%{name}deps
+install -Dm 755 %{S:2} "%{buildroot}/usr/bin/steam-runtime"
+  install -Dm 755 %{S:1} "%{buildroot}/usr/bin/steam-native"
+  install -d "%{buildroot}/usr/lib/steam"
+  mv "%{buildroot}/usr/bin/steam" "%{buildroot}/usr/lib/steam/steam"
+  ln -sf /usr/bin/steam-runtime "%{buildroot}/usr/bin/steam"
+
+  install -Dm 644 steam-native.desktop -t "%{buildroot}/usr/share/applications"
+  install -Dm 644 "%{buildroot}/usr/share/doc/steam/steam_install_agreement.txt" \
+    "%{buildroot}/usr/share/licenses/steam/LICENSE"
+  install -Dm 644 debian/changelog -t "%{buildroot}/usr/share/doc/%{name}"
+
+  # blank steamdeps because apt-get
+  ln -sf /usr/bin/true "%{buildroot}/usr/bin/steamdeps"
+
+  install -Dm 644 lib/udev/rules.d/99-steam-controller-perms.rules \
+    "%{buildroot}/usr/lib/udev/rules.d/70-steam-controller.rules"
+  install -Dm 644 lib/udev/rules.d/60-HTC-Vive-perms.rules \
+    "%{buildroot}/usr/lib/udev/rules.d/70-htc-vive.rules"
 
 mkdir -p %{buildroot}%{_udevrulesdir}/
 install -m 644 -p lib/udev/rules.d/* \
-    %{SOURCE8} %{SOURCE9} %{buildroot}%{_udevrulesdir}/
-
-desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
-
-install -D -m 644 -p %{SOURCE3} \
-    %{buildroot}%{_prefix}/lib/firewalld/services/steam.xml
-
-# Environment files
-mkdir -p %{buildroot}%{_sysconfdir}/profile.d
-install -pm 644 %{SOURCE1} %{SOURCE2} %{buildroot}%{_sysconfdir}/profile.d
+    %{S:8} %{S:9} %{buildroot}%{_udevrulesdir}/
 
 %if 0%{?fedora} >= 25
 # Install AppData
 mkdir -p %{buildroot}%{_datadir}/appdata
-install -p -m 0644 %{SOURCE4} %{buildroot}%{_datadir}/appdata/
+install -p -m 0644 %{S:4} %{buildroot}%{_datadir}/appdata/
 %endif
+
+desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
+
+
 
 %post
 /bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
-%if 0%{?fedora} == 24 || 0%{?fedora} == 23 || 0%{?rhel} == 7
+%if 0%{?fedora} == 24 || 0%{?rhel} == 7
 /usr/bin/update-desktop-database &> /dev/null || :
 %endif
 %firewalld_reload
 
 %postun
-%if 0%{?fedora} == 24 || 0%{?fedora} == 23 || 0%{?rhel} == 7
+%if 0%{?fedora} == 24 || 0%{?rhel} == 7
 /usr/bin/update-desktop-database &> /dev/null || :
 %endif
 if [ $1 -eq 0 ] ; then
@@ -160,10 +186,15 @@ fi
 %{_bindir}/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
 %files
-%{!?_licensedir:%global license %%doc}
-%license COPYING steam_install_agreement.txt
-%doc README debian/changelog README.Fedora
+%license COPYING steam_install_agreement.txt 
+/usr/share/licenses/steam/LICENSE
+%doc README debian/changelog 
 %{_bindir}/%{name}
+%{_bindir}/steam-native
+%{_bindir}/steam-runtime
+%{_bindir}/steamdeps
+%{_datadir}/applications/steam-native.desktop
+%{_docdir}/steam/steam_install_agreement.txt
 %if 0%{?fedora} >= 25
 %{_datadir}/appdata/%{name}.appdata.xml
 %endif
@@ -173,11 +204,26 @@ fi
 %{_datadir}/pixmaps/%{name}_tray_mono.png
 %{_libdir}/%{name}/
 %{_mandir}/man6/%{name}.*
-%{_prefix}/lib/firewalld/services/%{name}.xml
-%config(noreplace) %{_sysconfdir}/profile.d/%{name}.*sh
+#%{_prefix}/lib/firewalld/services/%{name}.xml
+#%config(noreplace) %{_sysconfdir}/profile.d/%{name}.*sh
 %{_udevrulesdir}/*
 
 %changelog
+
+* Fri Jun 09 2017 David Vásquez <davidva AT tutanota DOT com> 1.0.0.54-11 
+- Added script launcher
+- Alsa alternative
+
+* Thu Jun 08 2017 Simone Caronni <negativo17@gmail.com> - 1.0.0.54-10
+- Require alsa-plugins-pulseaudio and libatomic.
+
+* Wed Apr 19 2017 Simone Caronni <negativo17@gmail.com> - 1.0.0.54-9
+- GTK 2/3 version of libdbusmenu at version 16.04.0 is required for a working
+  tray menu depending on the desktop.
+
+* Mon Apr 10 2017 Simone Caronni <negativo17@gmail.com> - 1.0.0.54-8
+- Update udev rules.
+
 * Sun Mar 26 2017 RPM Fusion Release Engineering <kwizart@rpmfusion.org> - 1.0.0.54-7
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
 
