@@ -6,7 +6,7 @@
 
 Name:           steam
 Version:        1.0.0.54
-Release:        11%{?dist}
+Release:        12%{?dist}
 Summary:        Installer for the Steam software distribution service
 # Redistribution and repackaging for Linux is allowed, see license file
 License:        Steam License Agreement
@@ -209,6 +209,9 @@ fi
 %{_udevrulesdir}/*
 
 %changelog
+
+* Tue Jun 13 2017 David Vásquez <davidva AT tutanota DOT com> 1.0.0.54-12 
+- Solved jemalloc issue
 
 * Fri Jun 09 2017 David Vásquez <davidva AT tutanota DOT com> 1.0.0.54-11 
 - Added script launcher
