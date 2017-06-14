@@ -12,5 +12,5 @@ export STEAM_FRAME_FORCE_CLOSE=1
 
 LIB=lib
 # Override some libraries to avoid incompatibillity
-export LD_PRELOAD='/usr/$LIB/libstdc++.so.6 /usr/$LIB/libgcc_s.so.1 /usr/$LIB/libxcb.so.1 /usr/$LIB/libgpg-error.so'
+export LD_PRELOAD='/usr/$LIB/libstdc++.so.6 /usr/$LIB/libgcc_s.so.1 /usr/$LIB/libxcb.so.1 /usr/$LIB/libgpg-error.so /usr/lib64/libjemalloc.so.2'
 exec /usr/lib/steam/steam "$@"
