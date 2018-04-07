@@ -6,7 +6,7 @@
 
 Name:           steam
 Version:        1.0.0.54
-Release:        12%{?dist}
+Release:        13%{?dist}
 Summary:        Installer for the Steam software distribution service
 # Redistribution and repackaging for Linux is allowed, see license file
 License:        Steam License Agreement
@@ -61,7 +61,7 @@ Requires:       libXinerama%{?_isa}
 Requires:       libXtst%{?_isa}
 Requires:       libXScrnSaver%{?_isa}
 Requires:       mesa-libGL%{?_isa}
-Requires:       nss%{?_isa}
+Recommends:     nss%{?_isa}
 Requires:       pulseaudio-libs%{?_isa}
 
 # Required for sending out crash reports to Valve
@@ -209,6 +209,9 @@ fi
 %{_udevrulesdir}/*
 
 %changelog
+
+* Sat Apr 07 2018 David Vásquez <davidva AT tutanota DOT com> 1.0.0.54-13 
+- Weak dependency for nss
 
 * Tue Jun 13 2017 David Vásquez <davidva AT tutanota DOT com> 1.0.0.54-12 
 - Solved jemalloc issue
