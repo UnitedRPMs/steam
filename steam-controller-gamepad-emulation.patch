@@ -1,11 +1,14 @@
-diff -Naur steam.old/lib/udev/rules.d/99-steam-controller-perms.rules steam/lib/udev/rules.d/99-steam-controller-perms.rules
---- steam.old/lib/udev/rules.d/99-steam-controller-perms.rules	2016-11-28 14:49:17.909244287 +0100
-+++ steam/lib/udev/rules.d/99-steam-controller-perms.rules	2016-11-28 14:50:15.374202514 +0100
-@@ -23,3 +23,7 @@
- 
+diff -ruN orig/lib/udev/rules.d/99-steam-controller-perms.rules new/lib/udev/rules.d/99-steam-controller-perms.rules
+--- orig/lib/udev/rules.d/99-steam-controller-perms.rules	2018-07-23 20:07:26.000000000 -0600
++++ new/lib/udev/rules.d/99-steam-controller-perms.rules	2018-07-27 10:41:04.998774596 -0600
+@@ -24,6 +24,10 @@
  # DualShock 4 Slim over bluetooth hidraw
  KERNEL=="hidraw*", KERNELS=="*054C:09CC*", MODE="0666"
-+
+ 
 +# This rule is necessary for gamepad emulation; make sure each user requiring
 +# it is part of the input group.
 +KERNEL=="uinput", MODE="0660", GROUP="input", OPTIONS+="static_node=uinput"
++
+ # Nintendo Switch Pro Controller over USB hidraw
+ KERNEL=="hidraw*", ATTRS{idVendor}=="057e", ATTRS{idProduct}=="2009", MODE="0666"
+ 

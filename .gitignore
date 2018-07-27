@@ -3,6 +3,8 @@ BUILDROOT/*
 RPMS/*
 SPECS/*
 SRPMS/*
+new/*
+orig/*
 steam*.tar.gz
 .directory
 

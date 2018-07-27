@@ -5,15 +5,15 @@
 %{!?firewalld_reload:%global firewalld_reload test -f /usr/bin/firewall-cmd && firewall-cmd --reload --quiet || :}
 
 Name:           steam
-Version:        1.0.0.54
-Release:        13%{?dist}
+Version:        1.0.0.55
+Release:        2%{?dist}
 Summary:        Installer for the Steam software distribution service
 # Redistribution and repackaging for Linux is allowed, see license file
 License:        Steam License Agreement
 URL:            http://www.steampowered.com/
 ExclusiveArch:  i686
 
-Source0:        http://repo.steampowered.com/%{name}/pool/%{name}/s/%{name}/%{name}_%{version}.tar.gz
+Source0:        http://repo.steampowered.com/steam/pool/steam/s/steam/steam_%{version}.tar.gz
 Source1:	steam-native.sh	
 Source2:	steam-runtime.sh
 Source4:        %{name}.appdata.xml
@@ -113,10 +113,11 @@ and screenshot functionality, and many social features.
 %patch2 -p1
 
 sed -i 's/\r$//' %{name}.desktop
-sed -i 's/\r$//' steam_install_agreement.txt
+sed -i 's/\r$//' steam_subscriber_agreement.txt
 
   # apply roundups for udev rules
   sed -r 's|("0666")|"0660", TAG+="uaccess"|g' -i lib/udev/rules.d/99-steam-controller-perms.rules
+# patched...
 #  sed -r 's|("misc")|\1, OPTIONS+="static_node=uinput"|g' -i lib/udev/rules.d/99-steam-controller-perms.rules
   sed -r 's|(, TAG\+="uaccess")|, MODE="0660"\1|g' -i lib/udev/rules.d/60-HTC-Vive-perms.rules
 
@@ -133,14 +134,14 @@ sed -i 's/\r$//' steam_install_agreement.txt
 %install
 %make_install
 
-install -Dm 755 %{S:2} "%{buildroot}/usr/bin/steam-runtime"
+  install -Dm 755 %{S:2} "%{buildroot}/usr/bin/steam-runtime"
   install -Dm 755 %{S:1} "%{buildroot}/usr/bin/steam-native"
   install -d "%{buildroot}/usr/lib/steam"
   mv "%{buildroot}/usr/bin/steam" "%{buildroot}/usr/lib/steam/steam"
   ln -sf /usr/bin/steam-runtime "%{buildroot}/usr/bin/steam"
 
   install -Dm 644 steam-native.desktop -t "%{buildroot}/usr/share/applications"
-  install -Dm 644 "%{buildroot}/usr/share/doc/steam/steam_install_agreement.txt" \
+  install -Dm 644 "%{buildroot}/usr/share/doc/steam/steam_subscriber_agreement.txt" \
     "%{buildroot}/usr/share/licenses/steam/LICENSE"
   install -Dm 644 debian/changelog -t "%{buildroot}/usr/share/doc/%{name}"
 
@@ -164,8 +165,6 @@ install -p -m 0644 %{S:4} %{buildroot}%{_datadir}/appdata/
 
 desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 
-
-
 %post
 /bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
 %if 0%{?fedora} == 24 || 0%{?rhel} == 7
@@ -186,7 +185,7 @@ fi
 %{_bindir}/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
 %files
-%license COPYING steam_install_agreement.txt 
+%license COPYING steam_subscriber_agreement.txt 
 /usr/share/licenses/steam/LICENSE
 %doc README debian/changelog 
 %{_bindir}/%{name}
@@ -194,7 +193,7 @@ fi
 %{_bindir}/steam-runtime
 %{_bindir}/steamdeps
 %{_datadir}/applications/steam-native.desktop
-%{_docdir}/steam/steam_install_agreement.txt
+%{_docdir}/steam/steam_subscriber_agreement.txt
 %if 0%{?fedora} >= 25
 %{_datadir}/appdata/%{name}.appdata.xml
 %endif
@@ -209,6 +208,9 @@ fi
 %{_udevrulesdir}/*
 
 %changelog
+
+* Thu Jul 26 2018 David Va <davidva AT tuta DOT io> 1.0.0.55-2
+- Updated to 1.0.0.55
 
 * Sat Apr 07 2018 David Vásquez <davidva AT tutanota DOT com> 1.0.0.54-13 
 - Weak dependency for nss
