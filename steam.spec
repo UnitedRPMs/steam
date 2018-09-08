@@ -5,7 +5,7 @@
 %{!?firewalld_reload:%global firewalld_reload test -f /usr/bin/firewall-cmd && firewall-cmd --reload --quiet || :}
 
 Name:           steam
-Version:        1.0.0.55
+Version:        1.0.0.56
 Release:        2%{?dist}
 Summary:        Installer for the Steam software distribution service
 # Redistribution and repackaging for Linux is allowed, see license file
@@ -208,6 +208,9 @@ fi
 %{_udevrulesdir}/*
 
 %changelog
+
+* Fri Sep 07 2018 David Va <davidva AT tuta DOT io> 1.0.0.56-2
+- Updated to 1.0.0.56
 
 * Thu Jul 26 2018 David Va <davidva AT tuta DOT io> 1.0.0.55-2
 - Updated to 1.0.0.55
