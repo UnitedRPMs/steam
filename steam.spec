@@ -34,7 +34,7 @@ Patch0:         %{name}-3570.patch
 
 # Make Steam Controller usable as a GamePad:
 # https://steamcommunity.com/app/353370/discussions/0/490123197956024380/
-Patch1:         %{name}-controller-gamepad-emulation.patch
+#Patch1:         %{name}-controller-gamepad-emulation.patch
 
 # Checks if pulseaudio is installed and if it isn't, use alsa for SDL_AUDIODRIVER
 Patch2:		alsa_sdl_audiodriver.patch
@@ -107,10 +107,8 @@ installation, automatic updates, achievements, SteamCloud synchronized savegame
 and screenshot functionality, and many social features.
 
 %prep
-%setup -q -n %{name}
-%patch0 -p1
-%patch1 -p1
-%patch2 -p1
+%autosetup -n %{name} -p1
+
 
 sed -i 's/\r$//' %{name}.desktop
 sed -i 's/\r$//' steam_subscriber_agreement.txt
