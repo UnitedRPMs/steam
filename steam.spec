@@ -114,10 +114,10 @@ sed -i 's/\r$//' %{name}.desktop
 sed -i 's/\r$//' steam_subscriber_agreement.txt
 
   # apply roundups for udev rules
-  sed -r 's|("0666")|"0660", TAG+="uaccess"|g' -i lib/udev/rules.d/99-steam-controller-perms.rules
+#  sed -r 's|("0666")|"0660", TAG+="uaccess"|g' -i lib/udev/rules.d/99-steam-controller-perms.rules
 # patched...
 #  sed -r 's|("misc")|\1, OPTIONS+="static_node=uinput"|g' -i lib/udev/rules.d/99-steam-controller-perms.rules
-  sed -r 's|(, TAG\+="uaccess")|, MODE="0660"\1|g' -i lib/udev/rules.d/60-HTC-Vive-perms.rules
+#  sed -r 's|(, TAG\+="uaccess")|, MODE="0660"\1|g' -i lib/udev/rules.d/60-HTC-Vive-perms.rules
 
   # separated runtime/native desktop files
   cp steam{,-native}.desktop
@@ -146,10 +146,9 @@ sed -i 's/\r$//' steam_subscriber_agreement.txt
   # blank steamdeps because apt-get
   ln -sf /usr/bin/true "%{buildroot}/usr/bin/steamdeps"
 
-  install -Dm 644 lib/udev/rules.d/99-steam-controller-perms.rules \
-    "%{buildroot}/usr/lib/udev/rules.d/70-steam-controller.rules"
-  install -Dm 644 lib/udev/rules.d/60-HTC-Vive-perms.rules \
-    "%{buildroot}/usr/lib/udev/rules.d/70-htc-vive.rules"
+  install -Dm 644 lib/udev/rules.d/60-steam-input.rules \
+                  lib/udev/rules.d/60-steam-vr.rules \
+    "%{buildroot}/usr/lib/udev/rules.d/
 
 mkdir -p %{buildroot}%{_udevrulesdir}/
 install -m 644 -p lib/udev/rules.d/* \
