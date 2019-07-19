@@ -8,9 +8,9 @@
 
 # Unify close-to-tray behavior with other platforms. If using a distribution
 # that doesn't have proper compatible tray support set variable at 0.
-export STEAM_FRAME_FORCE_CLOSE=1
+# export STEAM_FRAME_FORCE_CLOSE=1
 
-export STEAM_RUNTIME=1
+export STEAM_RUNTIME=0
 # Workaround for dbus fatal termination related coredumps (SIGABRT)
 # https://github.com/ValveSoftware/steam-for-linux/issues/4464
 export DBUS_FATAL_WARNINGS=0

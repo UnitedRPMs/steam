@@ -5,7 +5,7 @@
 %{!?firewalld_reload:%global firewalld_reload test -f /usr/bin/firewall-cmd && firewall-cmd --reload --quiet || :}
 
 Name:           steam
-Version:        1.0.0.56
+Version:        1.0.0.61
 Release:        2%{?dist}
 Summary:        Installer for the Steam software distribution service
 # Redistribution and repackaging for Linux is allowed, see license file
@@ -116,7 +116,7 @@ sed -i 's/\r$//' steam_subscriber_agreement.txt
   # apply roundups for udev rules
   sed -r 's|("0666")|"0660", TAG+="uaccess"|g' -i lib/udev/rules.d/60-steam-input.rules
   sed -r 's|("misc")|\1, OPTIONS+="static_node=uinput"|g' -i lib/udev/rules.d/60-steam-input.rules
-  sed -r 's|(, TAG\+="uaccess")|, MODE="0660"\1|g' -i lib/udev/rules.d/60-steam-vr.rules
+  sed -r 's|(, TAG\+="uaccess")|, MODE="0660"\1|g' -i lib/udev/rules.d/60-steam-vr.rule
 
   # separated runtime/native desktop files
   cp steam{,-native}.desktop
@@ -145,7 +145,7 @@ sed -i 's/\r$//' steam_subscriber_agreement.txt
   # blank steamdeps because apt-get
   ln -sf /usr/bin/true "%{buildroot}/usr/bin/steamdeps"
 
-install -Dm 644 lib/udev/rules.d/60-steam-input.rules \
+  install -Dm 644 lib/udev/rules.d/60-steam-input.rules \
     "%{buildroot}/usr/lib/udev/rules.d/70-steam-input.rules"
   install -Dm 644 lib/udev/rules.d/60-steam-vr.rules \
     "%{buildroot}/usr/lib/udev/rules.d/70-steam-vr.rules"
@@ -205,6 +205,9 @@ fi
 %{_udevrulesdir}/*
 
 %changelog
+
+* Thu Jul 18 2019 David Va <davidva AT tuta DOT io> 1.0.0.61-2
+- Updated to 1.0.0.61
 
 * Fri Sep 07 2018 David Va <davidva AT tuta DOT io> 1.0.0.56-2
 - Updated to 1.0.0.56
