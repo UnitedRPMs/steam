@@ -116,7 +116,7 @@ sed -i 's/\r$//' steam_subscriber_agreement.txt
   # apply roundups for udev rules
   sed -r 's|("0666")|"0660", TAG+="uaccess"|g' -i lib/udev/rules.d/60-steam-input.rules
   sed -r 's|("misc")|\1, OPTIONS+="static_node=uinput"|g' -i lib/udev/rules.d/60-steam-input.rules
-  sed -r 's|(, TAG\+="uaccess")|, MODE="0660"\1|g' -i lib/udev/rules.d/60-steam-vr.rule
+  sed -r 's|(, TAG\+="uaccess")|, MODE="0660"\1|g' -i lib/udev/rules.d/60-steam-vr.rules
 
   # separated runtime/native desktop files
   cp steam{,-native}.desktop
