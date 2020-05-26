@@ -5,7 +5,7 @@
 %{!?firewalld_reload:%global firewalld_reload test -f /usr/bin/firewall-cmd && firewall-cmd --reload --quiet || :}
 
 Name:           steam
-Version:        1.0.0.61
+Version:        1.0.0.62
 Release:        2%{?dist}
 Summary:        Installer for the Steam software distribution service
 # Redistribution and repackaging for Linux is allowed, see license file
@@ -30,14 +30,12 @@ Source9:        https://raw.githubusercontent.com/cyndis/shield-controller-confi
 
 # Remove temporary leftover files after run (fixes multiuser):
 # https://github.com/ValveSoftware/steam-for-linux/issues/3570
-Patch0:         %{name}-3570.patch
+# Patch0:         %{name}-3570.patch
 
 # Make Steam Controller usable as a GamePad:
 # https://steamcommunity.com/app/353370/discussions/0/490123197956024380/
 #Patch1:         %{name}-controller-gamepad-emulation.patch
 
-# Checks if pulseaudio is installed and if it isn't, use alsa for SDL_AUDIODRIVER
-Patch2:		alsa_sdl_audiodriver.patch
 
 BuildRequires:  desktop-file-utils
 BuildRequires:  systemd
@@ -88,7 +86,6 @@ Requires:       libva-intel-driver%{?_isa}
 Requires:       libvdpau%{?_isa}
 
 # Required for having a functioning menu on the tray icon
-Requires:       libdbusmenu-gtk2%{?_isa} >= 16.04.0
 Requires:       libdbusmenu-gtk3%{?_isa} >= 16.04.0
 
 # Required by Feral interactive games
@@ -107,23 +104,16 @@ installation, automatic updates, achievements, SteamCloud synchronized savegame
 and screenshot functionality, and many social features.
 
 %prep
-%autosetup -n %{name} -p1
-
-
-sed -i 's/\r$//' %{name}.desktop
-sed -i 's/\r$//' steam_subscriber_agreement.txt
+%autosetup -n %{name}-launcher -p1
 
   # apply roundups for udev rules
-  sed -r 's|("0666")|"0660", TAG+="uaccess"|g' -i lib/udev/rules.d/60-steam-input.rules
-  sed -r 's|("misc")|\1, OPTIONS+="static_node=uinput"|g' -i lib/udev/rules.d/60-steam-input.rules
-  sed -r 's|(, TAG\+="uaccess")|, MODE="0660"\1|g' -i lib/udev/rules.d/60-steam-vr.rules
+  sed -r 's|("0666")|"0660", TAG+="uaccess"|g' -i subprojects/steam-devices/60-steam-input.rules
+  sed -r 's|("misc")|\1, OPTIONS+="static_node=uinput"|g' -i subprojects/steam-devices/60-steam-input.rules
+  sed -r 's|(, TAG\+="uaccess")|, MODE="0660"\1|g' -i subprojects/steam-devices/60-steam-vr.rules
 
   # separated runtime/native desktop files
-  cp steam{,-native}.desktop
   sed -r 's|(Name=Steam)|\1 (Runtime)|' -i steam.desktop
   sed -r 's|(/usr/bin/steam)|\1-runtime|' -i steam.desktop
-  sed -r 's|(Name=Steam)|\1 (Native)|' -i steam-native.desktop
-  sed -r 's|(/usr/bin/steam)|\1-native|' -i steam-native.desktop
 
 %build
 # Nothing to build
@@ -137,7 +127,7 @@ sed -i 's/\r$//' steam_subscriber_agreement.txt
   mv "%{buildroot}/usr/bin/steam" "%{buildroot}/usr/lib/steam/steam"
   ln -sf /usr/bin/steam-runtime "%{buildroot}/usr/bin/steam"
 
-  install -Dm 644 steam-native.desktop -t "%{buildroot}/usr/share/applications"
+#  install -Dm 644 steam-native.desktop -t "%{buildroot}/usr/share/applications"
   install -Dm 644 "%{buildroot}/usr/share/doc/steam/steam_subscriber_agreement.txt" \
     "%{buildroot}/usr/share/licenses/steam/LICENSE"
   install -Dm 644 debian/changelog -t "%{buildroot}/usr/share/doc/%{name}"
@@ -145,14 +135,13 @@ sed -i 's/\r$//' steam_subscriber_agreement.txt
   # blank steamdeps because apt-get
   ln -sf /usr/bin/true "%{buildroot}/usr/bin/steamdeps"
 
-  install -Dm 644 lib/udev/rules.d/60-steam-input.rules \
+  install -Dm 644 subprojects/steam-devices/60-steam-input.rules \
     "%{buildroot}/usr/lib/udev/rules.d/70-steam-input.rules"
-  install -Dm 644 lib/udev/rules.d/60-steam-vr.rules \
+  install -Dm 644 subprojects/steam-devices/60-steam-vr.rules \
     "%{buildroot}/usr/lib/udev/rules.d/70-steam-vr.rules"
 
 mkdir -p %{buildroot}%{_udevrulesdir}/
-install -m 644 -p lib/udev/rules.d/* \
-    %{S:8} %{S:9} %{buildroot}%{_udevrulesdir}/
+install -m 644 -p %{S:8} %{S:9} %{buildroot}%{_udevrulesdir}/
 
 %if 0%{?fedora} >= 25
 # Install AppData
@@ -160,7 +149,7 @@ mkdir -p %{buildroot}%{_datadir}/appdata
 install -p -m 0644 %{S:4} %{buildroot}%{_datadir}/appdata/
 %endif
 
-desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
+#desktop-file-validate %{buildroot}/%{_datadir}/applications/%{name}.desktop
 
 %post
 /bin/touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
@@ -189,7 +178,7 @@ fi
 %{_bindir}/steam-native
 %{_bindir}/steam-runtime
 %{_bindir}/steamdeps
-%{_datadir}/applications/steam-native.desktop
+#{_datadir}/applications/steam-native.desktop
 %{_docdir}/steam/steam_subscriber_agreement.txt
 %if 0%{?fedora} >= 25
 %{_datadir}/appdata/%{name}.appdata.xml
@@ -205,6 +194,9 @@ fi
 %{_udevrulesdir}/*
 
 %changelog
+
+* Sun May 24 2020 David Va <davidva AT tuta DOT io> 1.0.0.62-2
+- Updated to 1.0.0.62
 
 * Thu Jul 18 2019 David Va <davidva AT tuta DOT io> 1.0.0.61-2
 - Updated to 1.0.0.61
