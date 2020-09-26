@@ -5,7 +5,7 @@
 %{!?firewalld_reload:%global firewalld_reload test -f /usr/bin/firewall-cmd && firewall-cmd --reload --quiet || :}
 
 Name:           steam
-Version:        1.0.0.62
+Version:        1.0.0.66
 Release:        2%{?dist}
 Summary:        Installer for the Steam software distribution service
 # Redistribution and repackaging for Linux is allowed, see license file
@@ -53,6 +53,8 @@ Requires:       mesa-dri-drivers%{?_isa}
 # Minimum requirements for starting the steam client for the first time
 Requires:       alsa-lib%{?_isa}
 Requires:       gtk2%{?_isa}
+Requires:       libnsl%{?_isa}
+Requires:       libxcrypt-compat%{?_isa}
 Requires:       libpng12%{?_isa}
 Requires:       libXext%{?_isa}
 Requires:       libXinerama%{?_isa}
@@ -194,6 +196,9 @@ fi
 %{_udevrulesdir}/*
 
 %changelog
+
+* Thu Sep 24 2020 David Va <davidva AT tuta DOT io> 1.0.0.66-2
+- Updated to 1.0.0.66
 
 * Sun May 24 2020 David Va <davidva AT tuta DOT io> 1.0.0.62-2
 - Updated to 1.0.0.62
