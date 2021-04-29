@@ -5,7 +5,7 @@
 %{!?firewalld_reload:%global firewalld_reload test -f /usr/bin/firewall-cmd && firewall-cmd --reload --quiet || :}
 
 Name:           steam
-Version:        1.0.0.66
+Version:        1.0.0.70
 Release:        2%{?dist}
 Summary:        Installer for the Steam software distribution service
 # Redistribution and repackaging for Linux is allowed, see license file
@@ -39,6 +39,7 @@ Source9:        https://raw.githubusercontent.com/cyndis/shield-controller-confi
 
 BuildRequires:  desktop-file-utils
 BuildRequires:  systemd
+BuildRequires:  make
 
 # Required to run the initial setup
 Requires:       tar
@@ -196,6 +197,9 @@ fi
 %{_udevrulesdir}/*
 
 %changelog
+
+* Mon Apr 26 2021 David Va <davidva AT tuta DOT io> 1.0.0.70-2
+- Updated to 1.0.0.70
 
 * Thu Sep 24 2020 David Va <davidva AT tuta DOT io> 1.0.0.66-2
 - Updated to 1.0.0.66
